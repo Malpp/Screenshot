@@ -25,6 +25,7 @@ namespace Screenshot
 public class MyCustomApplicationContext : ApplicationContext
 {
     private NotifyIcon trayIcon;
+    private bool cursorIsActive;
 
     public MyCustomApplicationContext()
     {
@@ -45,5 +46,24 @@ public class MyCustomApplicationContext : ApplicationContext
         trayIcon.Visible = false;
 
         Application.Exit();
+    }
+
+    public void ControlCursor()
+    {
+        if (!cursorIsActive)
+        {
+            cursorIsActive = true;
+            Cursor.Current = Cursors.Cross;
+        }
+        else
+        {
+            cursorIsActive = false;
+            Cursor.Current = Cursors.Default;
+        }
+    }
+
+    public void CheckControls()
+    {
+
     }
 }
