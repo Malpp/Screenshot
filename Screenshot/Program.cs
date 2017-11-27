@@ -59,7 +59,7 @@ public class MyCustomApplicationContext : ApplicationContext
         graphics.CopyFromScreen(0, 0, 0, 0, printscreen.Size);
 
         //save graphic variable into memory
-        printscreen.Save("C:/asd.png", ImageFormat.Png);
+        //printscreen.Save("C:/asd.png", ImageFormat.Png);
     }
 
     void Exit(object sender, EventArgs e)
