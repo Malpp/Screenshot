@@ -38,7 +38,7 @@ public class MyCustomApplicationContext : ApplicationContext
             Icon = Resources.AppIcon,
             ContextMenu = new ContextMenu(new MenuItem[]
             {
-                new MenuItem("Screenshot", Screenshot),
+                new MenuItem("Screenshot", Screenshot, Shortcut.CtrlShiftC),
                 new MenuItem("Exit", Exit)
             }),
             Visible = true
@@ -58,6 +58,7 @@ public class MyCustomApplicationContext : ApplicationContext
         Graphics graphics = Graphics.FromImage(printscreen as Image);
         graphics.CopyFromScreen(0, 0, 0, 0, printscreen.Size);
 
+        MessageBox.Show(totalWidth + " " + totalHeight);
         //save graphic variable into memory
         //printscreen.Save("C:/asd.png", ImageFormat.Png);
     }
