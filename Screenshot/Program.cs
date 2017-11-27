@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Screenshot;
 using Screenshot.Properties;
 
 namespace Screenshot
@@ -58,7 +59,10 @@ public class MyCustomApplicationContext : ApplicationContext
         Graphics graphics = Graphics.FromImage(printscreen as Image);
         graphics.CopyFromScreen(0, 0, 0, 0, printscreen.Size);
 
-        MessageBox.Show(totalWidth + " " + totalHeight);
+        Form form = new Form1();
+        form.Show();
+        form.Focus();
+
         //save graphic variable into memory
         //printscreen.Save("C:/asd.png", ImageFormat.Png);
     }

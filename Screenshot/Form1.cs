@@ -16,5 +16,16 @@ namespace Screenshot
         {
             InitializeComponent();
         }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            int screenLeft = SystemInformation.VirtualScreen.Left;
+            int screenTop = SystemInformation.VirtualScreen.Top;
+            int screenWidth = SystemInformation.VirtualScreen.Width;
+            int screenHeight = SystemInformation.VirtualScreen.Height;
+
+            this.Size = new System.Drawing.Size(screenWidth, screenHeight);
+            this.Location = new System.Drawing.Point(screenLeft, screenTop);
+        }
     }
 }
