@@ -7,6 +7,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Screenshot.Properties;
+using System.ComponentModel;
+using System.Data;
+using System.Text;
+using System.Runtime.InteropServices;
 
 namespace Screenshot
 {
@@ -23,70 +27,76 @@ namespace Screenshot
             Application.Run(new MyCustomApplicationContext());
         }
     }
-}
 
-public class MyCustomApplicationContext : ApplicationContext
-{
-    private NotifyIcon trayIcon;
-    private bool cursorIsActive;
-
-    public MyCustomApplicationContext()
+    public class MyCustomApplicationContext : ApplicationContext
     {
-        // Initialize Tray Icon
-        trayIcon = new NotifyIcon()
+        private NotifyIcon trayIcon;
+        private bool cursorIsActive;
+
+        private KeyboardHook hook = new KeyboardHook();
+
+        public MyCustomApplicationContext()
         {
-            Icon = Resources.AppIcon,
-            ContextMenu = new ContextMenu(new MenuItem[]
+            hook.RegisterHotKey(ModifierKeys.Control | ModifierKeys.Shift, Keys.C);
+            hook.KeyPressed += new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
+
+            // Initialize Tray Icon
+            trayIcon = new NotifyIcon()
             {
+                Icon = Resources.AppIcon,
+                ContextMenu = new ContextMenu(new MenuItem[]
+                {
                 new MenuItem("Screenshot", Screenshot, Shortcut.CtrlShiftC),
                 new MenuItem("Exit", Exit)
-            }),
-            Visible = true
-        };
-    }
-
-    private void Screenshot(object sender, EventArgs e)
-    {
-        //trayIcon.Visible = false;
-
-        int totalHeight = 0;
-        int totalWidth = 0;
-        Screen.AllScreens.ToList().ForEach(screen => totalHeight += screen.Bounds.Height);
-        Screen.AllScreens.ToList().ForEach(screen => totalWidth += screen.Bounds.Width);
-        Bitmap printscreen = new Bitmap(totalWidth, totalHeight);
-
-        Graphics graphics = Graphics.FromImage(printscreen as Image);
-        graphics.CopyFromScreen(0, 0, 0, 0, printscreen.Size);
-
-        MessageBox.Show(totalWidth + " " + totalHeight);
-        //save graphic variable into memory
-        //printscreen.Save("C:/asd.png", ImageFormat.Png);
-    }
-
-    void Exit(object sender, EventArgs e)
-    {
-        // Hide tray icon, otherwise it will remain shown until user mouses over it
-        trayIcon.Visible = false;
-
-        Application.Exit();
-    }
-
-    public void ControlCursor()
-    {
-        if (!cursorIsActive)
-        {
-            cursorIsActive = true;
-            Cursor.Current = Cursors.Cross;
+                }),
+                Visible = true
+            };
         }
-        else
+
+        private void Screenshot(object sender, EventArgs e)
         {
-            cursorIsActive = false;
-            Cursor.Current = Cursors.Default;
+            //trayIcon.Visible = false;
+
+            int totalHeight = 0;
+            int totalWidth = 0;
+            Screen.AllScreens.ToList().ForEach(screen => totalHeight += screen.Bounds.Height);
+            Screen.AllScreens.ToList().ForEach(screen => totalWidth += screen.Bounds.Width);
+            Bitmap printscreen = new Bitmap(totalWidth, totalHeight);
+
+            Graphics graphics = Graphics.FromImage(printscreen as Image);
+            graphics.CopyFromScreen(0, 0, 0, 0, printscreen.Size);
+
+            MessageBox.Show(totalWidth + " " + totalHeight);
+            //save graphic variable into memory
+            //printscreen.Save("C:/asd.png", ImageFormat.Png);
         }
-    }
 
-    public void CheckControls()
-    {
+        void Exit(object sender, EventArgs e)
+        {
+            // Hide tray icon, otherwise it will remain shown until user mouses over it
+            trayIcon.Visible = false;
 
+            Application.Exit();
+        }
+
+        public void ControlCursor()
+        {
+            if (!cursorIsActive)
+            {
+                cursorIsActive = true;
+                Cursor.Current = Cursors.Cross;
+            }
+            else
+            {
+                cursorIsActive = false;
+                Cursor.Current = Cursors.Default;
+            }
+        }
+
+        void hook_KeyPressed(object sender, KeyPressedEventArgs e)
+        {
+            Screenshot(sender, e);
+        }
     }
 }
+
