@@ -38,6 +38,7 @@ namespace Screenshot
         public MyCustomApplicationContext()
         {
             hook.RegisterHotKey(ModifierKeys.Control | ModifierKeys.Shift, Keys.C);
+            hook.RegisterHotKey(ModifierKeys.Control | ModifierKeys.Shift, Keys.E);
             hook.KeyPressed += new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
 
             // Initialize Tray Icon
@@ -95,7 +96,12 @@ namespace Screenshot
 
         void hook_KeyPressed(object sender, KeyPressedEventArgs e)
         {
-            Screenshot(sender, e);
+            if (e.Modifier == (int)ModifierKeys.Control + ModifierKeys.Shift && e.Key == Keys.E)
+                Exit(sender, e);
+            else if (e.Modifier == (int)ModifierKeys.Control + ModifierKeys.Shift && e.Key == Keys.C)
+                Screenshot(sender, e);
+
+
         }
     }
 }
