@@ -104,10 +104,22 @@ namespace Screenshot
                         LeftButtonUp((MSLLHOOKSTRUCT) Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT)));
                 if (MouseMessages.WM_RBUTTONDOWN == (MouseMessages) wParam)
                     if (RightButtonDown != null)
+                    {
                         RightButtonDown((MSLLHOOKSTRUCT) Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT)));
+                        if (MyCustomApplicationContext.formCreated)
+                        {
+                            return new IntPtr(1);
+                        }
+                    }
                 if (MouseMessages.WM_RBUTTONUP == (MouseMessages) wParam)
                     if (RightButtonUp != null)
+                    {
                         RightButtonUp((MSLLHOOKSTRUCT) Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT)));
+                        if (MyCustomApplicationContext.formCreated)
+                        {
+                            return new IntPtr(1);
+                        }
+                    }
                 if (MouseMessages.WM_MOUSEMOVE == (MouseMessages) wParam)
                     if (MouseMove != null)
                         MouseMove((MSLLHOOKSTRUCT) Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT)));

@@ -32,12 +32,12 @@ namespace Screenshot
 
     public class MyCustomApplicationContext : ApplicationContext
     {
-        
         private NotifyIcon trayIcon;
         private bool cursorIsActive;
         private Thread screenshoThread;
         public static bool formCreated = false;
         private bool screenshotDone = false;
+        private bool isCanceled = false;
         private Form1 form1;
         private Point startPos;
         private Bitmap printscreen;
@@ -51,6 +51,7 @@ namespace Screenshot
             hook.RegisterHotKey(ModifierKeys.Control | ModifierKeys.Shift, Keys.E);
             hook.KeyPressed += new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
             mouseHook.LeftButtonDown += MouseHookOnLeftButtonDown;
+            mouseHook.RightButtonUp += MouseHookOnRightButtonUp;
             mouseHook.Install();
 
             // Initialize Tray Icon
@@ -66,12 +67,22 @@ namespace Screenshot
             };
         }
 
+        private void MouseHookOnRightButtonUp(MouseHook.MSLLHOOKSTRUCT mouseStruct)
+        {
+            if (formCreated)
+            {
+                screenshotDone = true;
+                isCanceled = true;
+            }
+        }
+
         private void MouseHookOnLeftButtonDown(MouseHook.MSLLHOOKSTRUCT mouseStruct)
         {
             if (formCreated)
             {
                 screenshotDone = true;
                 Console.WriteLine("REEEEEEEe");
+                isCanceled = false;
             }
         }
 
@@ -123,11 +134,14 @@ namespace Screenshot
             Size finalSize = form1.Size;
             Point finalLocation = form1.Location;
             form1.Close();
-            printscreen = new Bitmap(finalSize.Width, finalSize.Height);
-
-            using (Graphics graphic = Graphics.FromImage(printscreen))
+            if (!isCanceled)
             {
-                graphic.CopyFromScreen(finalLocation.X, finalLocation.Y, 0, 0, finalSize);
+                printscreen = new Bitmap(finalSize.Width, finalSize.Height);
+
+                using (Graphics graphic = Graphics.FromImage(printscreen))
+                {
+                    graphic.CopyFromScreen(finalLocation.X, finalLocation.Y, 0, 0, finalSize);
+                }
             }
             Console.WriteLine("Done");
             screenshotDone = false;
@@ -144,12 +158,10 @@ namespace Screenshot
 
         void hook_KeyPressed(object sender, KeyPressedEventArgs e)
         {
-            if (e.Modifier == (int)ModifierKeys.Control + ModifierKeys.Shift && e.Key == Keys.E)
+            if (e.Modifier == (int) ModifierKeys.Control + ModifierKeys.Shift && e.Key == Keys.E)
                 Exit(sender, e);
-            else if (e.Modifier == (int)ModifierKeys.Control + ModifierKeys.Shift && e.Key == Keys.C)
+            else if (e.Modifier == (int) ModifierKeys.Control + ModifierKeys.Shift && e.Key == Keys.C)
                 Screenshot(sender, e);
-
-
         }
     }
 }
