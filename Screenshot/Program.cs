@@ -12,6 +12,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Screenshot
 {
@@ -31,15 +32,25 @@ namespace Screenshot
 
     public class MyCustomApplicationContext : ApplicationContext
     {
+        
         private NotifyIcon trayIcon;
         private bool cursorIsActive;
+        private Thread screenshoThread;
+        public static bool formCreated = false;
+        private bool screenshotDone = false;
+        private Form1 form1;
+        private Point startPos;
+        private Bitmap printscreen;
 
         private KeyboardHook hook = new KeyboardHook();
+        MouseHook mouseHook = new MouseHook();
 
         public MyCustomApplicationContext()
         {
             hook.RegisterHotKey(ModifierKeys.Control | ModifierKeys.Shift, Keys.C);
             hook.KeyPressed += new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
+            mouseHook.LeftButtonDown += MouseHookOnLeftButtonDown;
+            mouseHook.Install();
 
             // Initialize Tray Icon
             trayIcon = new NotifyIcon()
@@ -47,17 +58,30 @@ namespace Screenshot
                 Icon = Resources.AppIcon,
                 ContextMenu = new ContextMenu(new MenuItem[]
                 {
-                new MenuItem("Screenshot", Screenshot, Shortcut.CtrlShiftC),
-                new MenuItem("Exit", Exit)
+                    new MenuItem("Screenshot", Screenshot, Shortcut.CtrlShiftC),
+                    new MenuItem("Exit", Exit)
                 }),
                 Visible = true
             };
         }
 
+        private void MouseHookOnLeftButtonDown(MouseHook.MSLLHOOKSTRUCT mouseStruct)
+        {
+            if (formCreated)
+            {
+                screenshotDone = true;
+                Console.WriteLine("REEEEEEEe");
+            }
+        }
+
         private void Screenshot(object sender, EventArgs e)
         {
+            screenshoThread = new Thread(TakeScreenshot);
+            screenshoThread.Start();
+            screenshoThread.Join();
+            Clipboard.SetImage(printscreen);
             //trayIcon.Visible = false;
-
+            /*
             int totalHeight = 0;
             int totalWidth = 0;
             Screen.AllScreens.ToList().ForEach(screen => totalHeight += screen.Bounds.Height);
@@ -67,13 +91,47 @@ namespace Screenshot
             Graphics graphics = Graphics.FromImage(printscreen as Image);
             graphics.CopyFromScreen(0, 0, 0, 0, printscreen.Size);
 
-        Form form = new Form1();
-        form.Show();
-        form.Focus();
+            Form form = new Form1();
+            form.Show();
+            form.Focus();
+            */
+            //save graphic variable into memory
+            //printscreen.Save("C:/asd.png", ImageFormat.Png);
+        }
 
-        //save graphic variable into memory
-        //printscreen.Save("C:/asd.png", ImageFormat.Png);
-    }
+        private void TakeScreenshot()
+        {
+            Console.WriteLine("Hello");
+            while (!screenshotDone)
+            {
+                if (!formCreated)
+                {
+                    startPos = Cursor.Position;
+                    form1 = new Form1 {Location = startPos};
+                    form1.Show();
+                    formCreated = true;
+                }
+                else if (formCreated)
+                {
+                    Point newPos = Cursor.Position;
+                    newPos.X -= startPos.X;
+                    newPos.Y -= startPos.Y;
+                    form1.Size = (Size) newPos;
+                }
+            }
+            Size finalSize = form1.Size;
+            Point finalLocation = form1.Location;
+            form1.Close();
+            printscreen = new Bitmap(finalSize.Width, finalSize.Height);
+
+            using (Graphics graphic = Graphics.FromImage(printscreen))
+            {
+                graphic.CopyFromScreen(finalLocation.X, finalLocation.Y, 0, 0, finalSize);
+            }
+            Console.WriteLine("Done");
+            screenshotDone = false;
+            formCreated = false;
+        }
 
         void Exit(object sender, EventArgs e)
         {
@@ -83,24 +141,9 @@ namespace Screenshot
             Application.Exit();
         }
 
-        public void ControlCursor()
-        {
-            if (!cursorIsActive)
-            {
-                cursorIsActive = true;
-                Cursor.Current = Cursors.Cross;
-            }
-            else
-            {
-                cursorIsActive = false;
-                Cursor.Current = Cursors.Default;
-            }
-        }
-
         void hook_KeyPressed(object sender, KeyPressedEventArgs e)
         {
             Screenshot(sender, e);
         }
     }
 }
-
